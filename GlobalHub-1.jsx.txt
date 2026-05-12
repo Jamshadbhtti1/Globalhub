@@ -1,0 +1,636 @@
+import { useState, useEffect, useRef } from "react";
+
+const COLORS = {
+  bg: "#050A14",
+  surface: "#0D1626",
+  card: "#111D2E",
+  border: "#1A2D45",
+  accent: "#00C6FF",
+  accentGlow: "#00C6FF33",
+  gold: "#FFD700",
+  green: "#00FF88",
+  red: "#FF3B5C",
+  purple: "#A855F7",
+  text: "#E8F4FF",
+  muted: "#5A7A9A",
+};
+
+const mockVideos = [
+  { id: 1, title: "How to Build a Global Business in 2026", views: "2.4M", time: "12:34", channel: "BizMasters", thumb: "🎬", category: "Business", live: false },
+  { id: 2, title: "AI Marketing Strategies That Actually Work", views: "1.8M", time: "18:22", channel: "GrowthHQ", thumb: "📈", category: "Marketing", live: false },
+  { id: 3, title: "LIVE: Global Entrepreneur Summit 2026", views: "45K", time: "LIVE", channel: "GlobalHub Official", thumb: "🌍", category: "Live", live: true },
+  { id: 4, title: "SEO Secrets to Rank #1 on Google", views: "3.2M", time: "24:10", channel: "SEO Pro", thumb: "🔍", category: "SEO", live: false },
+  { id: 5, title: "CRM Automation for Small Business", views: "890K", time: "15:45", channel: "HubTech", thumb: "⚙️", category: "CRM", live: false },
+  { id: 6, title: "From Zero to $1M - Real Story", views: "5.1M", time: "32:18", channel: "StartupTV", thumb: "💰", category: "Business", live: false },
+];
+
+const mockPosts = [
+  { id: 1, user: "Sarah Chen", role: "CEO @ TechVentures", avatar: "SC", time: "2m ago", content: "Just closed our Series A! 🚀 Thank you GlobalHub community for the connections that made this possible.", likes: 2840, comments: 156, shares: 89 },
+  { id: 2, user: "Ahmed Al-Rashid", role: "Digital Marketer", avatar: "AA", time: "15m ago", content: "Our latest campaign using GlobalHub CRM tools generated 340% ROI in just 30 days. Here's what we did differently... 🧵", likes: 1520, comments: 234, shares: 445 },
+  { id: 3, user: "Priya Sharma", role: "Founder @ EduTech", avatar: "PS", time: "1h ago", content: "The future of education is LIVE streaming + community. We hit 100K students this month on GlobalHub! 🎓", likes: 3200, comments: 189, shares: 267 },
+];
+
+const mockContacts = [
+  { name: "James Wilson", company: "InnovateCo", status: "Hot Lead", value: "$45,000", stage: "Proposal" },
+  { name: "Liu Wei", company: "TechBridge Asia", status: "Negotiating", value: "$120,000", stage: "Contract" },
+  { name: "Maria Santos", company: "GrowthLab", status: "New Lead", value: "$28,000", stage: "Discovery" },
+  { name: "Yusuf Okonkwo", company: "AfricaTech", status: "Closed Won", value: "$89,000", stage: "Closed" },
+];
+
+const tabs = ["Home", "Videos", "Live", "Social", "CRM", "AI Tools"];
+
+export default function GlobalHub() {
+  const [activeTab, setActiveTab] = useState("Home");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [likedPosts, setLikedPosts] = useState({});
+  const [notifications, setNotifications] = useState(7);
+  const [liveCount, setLiveCount] = useState(45230);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveCount(prev => prev + Math.floor(Math.random() * 20 - 5));
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const toggleLike = (id) => {
+    setLikedPosts(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  return (
+    <div style={{
+      fontFamily: "'Sora', 'Segoe UI', sans-serif",
+      background: COLORS.bg,
+      color: COLORS.text,
+      minHeight: "100vh",
+      overflow: "hidden",
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: ${COLORS.bg}; }
+        ::-webkit-scrollbar-thumb { background: ${COLORS.border}; border-radius: 2px; }
+        .tab-btn { transition: all 0.25s ease; cursor: pointer; border: none; outline: none; }
+        .tab-btn:hover { opacity: 1 !important; }
+        .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer; }
+        .card-hover:hover { transform: translateY(-3px); box-shadow: 0 8px 32px ${COLORS.accentGlow}; }
+        .live-pulse { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .glow-text { text-shadow: 0 0 20px ${COLORS.accent}88; }
+        .shine { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); background-size: 200% 100%; animation: shine 3s infinite; }
+        @keyframes shine { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        .slide-in { animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from{transform:translateY(10px);opacity:0} to{transform:translateY(0);opacity:1} }
+        .btn-glow:hover { box-shadow: 0 0 20px ${COLORS.accent}66; }
+      `}</style>
+
+      {/* TOP NAV */}
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+        background: `${COLORS.bg}EE`,
+        backdropFilter: "blur(20px)",
+        borderBottom: `1px solid ${COLORS.border}`,
+        padding: "0 20px",
+        height: "60px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: "12px",
+      }}>
+        {/* Logo */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+          <div style={{
+            width: "32px", height: "32px",
+            background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.purple})`,
+            borderRadius: "8px",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "16px", fontWeight: "800",
+          }}>G</div>
+          <span style={{ fontWeight: "800", fontSize: "18px", letterSpacing: "-0.5px" }}>
+            Global<span style={{ color: COLORS.accent }}>Hub</span>
+          </span>
+        </div>
+
+        {/* Search */}
+        <div style={{
+          flex: 1, maxWidth: "420px",
+          background: COLORS.surface,
+          border: `1px solid ${COLORS.border}`,
+          borderRadius: "24px",
+          display: "flex", alignItems: "center",
+          padding: "0 16px", gap: "8px",
+        }}>
+          <span style={{ color: COLORS.muted }}>🔍</span>
+          <input
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search videos, people, businesses..."
+            style={{
+              flex: 1, background: "transparent", border: "none", outline: "none",
+              color: COLORS.text, fontSize: "13px", padding: "8px 0",
+            }}
+          />
+        </div>
+
+        {/* Right actions */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+          <button className="tab-btn btn-glow" style={{
+            background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.purple})`,
+            border: "none", color: "#000", fontWeight: "700", fontSize: "12px",
+            padding: "7px 14px", borderRadius: "20px", cursor: "pointer",
+          }}>+ Upload</button>
+
+          <div style={{ position: "relative", cursor: "pointer" }} onClick={() => setNotifications(0)}>
+            <span style={{ fontSize: "20px" }}>🔔</span>
+            {notifications > 0 && (
+              <div style={{
+                position: "absolute", top: "-4px", right: "-4px",
+                background: COLORS.red, color: "#fff",
+                borderRadius: "10px", fontSize: "9px", fontWeight: "700",
+                padding: "1px 5px", minWidth: "16px", textAlign: "center",
+              }}>{notifications}</div>
+            )}
+          </div>
+
+          <div style={{
+            width: "32px", height: "32px",
+            background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.accent})`,
+            borderRadius: "50%", display: "flex", alignItems: "center",
+            justifyContent: "center", fontSize: "13px", fontWeight: "700", color: "#000",
+            cursor: "pointer",
+          }}>U</div>
+        </div>
+      </nav>
+
+      {/* TAB BAR */}
+      <div style={{
+        position: "fixed", top: "60px", left: 0, right: 0, zIndex: 99,
+        background: `${COLORS.surface}EE`,
+        backdropFilter: "blur(10px)",
+        borderBottom: `1px solid ${COLORS.border}`,
+        display: "flex", overflowX: "auto", gap: "4px", padding: "0 16px",
+      }}>
+        {tabs.map(tab => (
+          <button key={tab} className="tab-btn" onClick={() => setActiveTab(tab)} style={{
+            background: "none", border: "none", cursor: "pointer",
+            color: activeTab === tab ? COLORS.accent : COLORS.muted,
+            fontWeight: activeTab === tab ? "700" : "500",
+            fontSize: "13px", padding: "12px 16px",
+            borderBottom: activeTab === tab ? `2px solid ${COLORS.accent}` : "2px solid transparent",
+            whiteSpace: "nowrap", transition: "all 0.2s",
+            fontFamily: "inherit",
+          }}>
+            {tab === "Live" && <span className="live-pulse" style={{ color: COLORS.red, marginRight: "4px" }}>●</span>}
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* MAIN CONTENT */}
+      <div style={{ paddingTop: "112px", minHeight: "100vh" }}>
+
+        {/* ===== HOME TAB ===== */}
+        {activeTab === "Home" && (
+          <div className="slide-in" style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
+
+            {/* Hero Banner */}
+            <div style={{
+              background: `linear-gradient(135deg, ${COLORS.surface}, #0A1628)`,
+              border: `1px solid ${COLORS.border}`,
+              borderRadius: "16px", padding: "32px",
+              marginBottom: "24px", position: "relative", overflow: "hidden",
+            }}>
+              <div style={{
+                position: "absolute", top: "-60px", right: "-60px",
+                width: "200px", height: "200px",
+                background: `radial-gradient(circle, ${COLORS.accent}22, transparent)`,
+                borderRadius: "50%",
+              }} />
+              <div style={{ position: "relative" }}>
+                <div style={{
+                  display: "inline-block", background: COLORS.accentGlow,
+                  border: `1px solid ${COLORS.accent}44`, borderRadius: "20px",
+                  padding: "4px 12px", fontSize: "11px", color: COLORS.accent,
+                  fontWeight: "600", marginBottom: "12px", letterSpacing: "1px",
+                }}>🌍 GLOBAL PLATFORM #1</div>
+                <h1 className="glow-text" style={{
+                  fontSize: "clamp(22px, 4vw, 36px)", fontWeight: "800",
+                  lineHeight: "1.2", marginBottom: "12px",
+                }}>
+                  The World's Most Powerful<br />
+                  <span style={{ color: COLORS.accent }}>Business & Content Hub</span>
+                </h1>
+                <p style={{ color: COLORS.muted, fontSize: "14px", marginBottom: "20px", maxWidth: "500px" }}>
+                  Videos • Live Streaming • Social Network • CRM • AI Tools — All in One Platform
+                </p>
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                  <button className="btn-glow" style={{
+                    background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.purple})`,
+                    border: "none", color: "#000", fontWeight: "700",
+                    padding: "10px 24px", borderRadius: "24px", cursor: "pointer", fontSize: "13px",
+                    fontFamily: "inherit", transition: "all 0.2s",
+                  }}>🚀 Get Started Free</button>
+                  <button style={{
+                    background: "transparent", border: `1px solid ${COLORS.border}`,
+                    color: COLORS.text, padding: "10px 24px", borderRadius: "24px",
+                    cursor: "pointer", fontSize: "13px", fontFamily: "inherit",
+                  }}>▶ Watch Demo</button>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats Row */}
+            {[
+              { label: "Active Users", value: "12.4M", icon: "👥", color: COLORS.accent },
+              { label: "Videos Uploaded", value: "890K", icon: "🎬", color: COLORS.purple },
+              { label: "Live Right Now", value: liveCount.toLocaleString(), icon: "🔴", color: COLORS.red },
+              { label: "Businesses", value: "45K+", icon: "💼", color: COLORS.gold },
+            ].map((stat, i) => (
+              <div key={i} className="card-hover shine" style={{
+                display: "inline-block", width: "calc(25% - 12px)",
+                minWidth: "120px",
+                background: COLORS.card, border: `1px solid ${COLORS.border}`,
+                borderRadius: "12px", padding: "16px", margin: "0 4px 16px",
+                textAlign: "center",
+              }}>
+                <div style={{ fontSize: "22px", marginBottom: "4px" }}>{stat.icon}</div>
+                <div style={{ fontSize: "20px", fontWeight: "800", color: stat.color, fontFamily: "'Space Mono', monospace" }}>{stat.value}</div>
+                <div style={{ fontSize: "11px", color: COLORS.muted, marginTop: "2px" }}>{stat.label}</div>
+              </div>
+            ))}
+
+            {/* Trending Videos */}
+            <h2 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "16px" }}>
+              🔥 Trending Now
+            </h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "12px" }}>
+              {mockVideos.slice(0, 4).map(video => (
+                <VideoCard key={video.id} video={video} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ===== VIDEOS TAB ===== */}
+        {activeTab === "Videos" && (
+          <div className="slide-in" style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h2 style={{ fontSize: "20px", fontWeight: "700" }}>📹 All Videos</h2>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {["All", "Business", "Marketing", "SEO", "CRM"].map(cat => (
+                  <button key={cat} style={{
+                    background: cat === "All" ? COLORS.accent : COLORS.surface,
+                    color: cat === "All" ? "#000" : COLORS.muted,
+                    border: `1px solid ${COLORS.border}`, borderRadius: "16px",
+                    padding: "5px 12px", fontSize: "11px", fontWeight: "600",
+                    cursor: "pointer", fontFamily: "inherit",
+                  }}>{cat}</button>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "14px" }}>
+              {mockVideos.map(video => <VideoCard key={video.id} video={video} />)}
+            </div>
+          </div>
+        )}
+
+        {/* ===== LIVE TAB ===== */}
+        {activeTab === "Live" && (
+          <div className="slide-in" style={{ padding: "20px", maxWidth: "1000px", margin: "0 auto" }}>
+            {/* Main Live Player */}
+            <div style={{
+              background: COLORS.card, border: `2px solid ${COLORS.red}`,
+              borderRadius: "16px", overflow: "hidden", marginBottom: "20px",
+            }}>
+              <div style={{
+                background: "linear-gradient(135deg, #0A0A0A, #1A0A1A)",
+                aspectRatio: "16/9", display: "flex", alignItems: "center",
+                justifyContent: "center", flexDirection: "column", gap: "12px",
+                position: "relative",
+              }}>
+                <div style={{ fontSize: "48px" }}>🌍</div>
+                <div style={{ fontSize: "20px", fontWeight: "700" }}>Global Entrepreneur Summit 2026</div>
+                <div style={{
+                  background: COLORS.red, color: "#fff", padding: "4px 12px",
+                  borderRadius: "4px", fontSize: "12px", fontWeight: "700",
+                  display: "flex", alignItems: "center", gap: "6px",
+                }}>
+                  <span className="live-pulse">●</span> LIVE
+                </div>
+                <div style={{ color: COLORS.muted, fontSize: "13px" }}>
+                  👁 {liveCount.toLocaleString()} watching now
+                </div>
+                <button style={{
+                  background: COLORS.red, color: "#fff", border: "none",
+                  borderRadius: "24px", padding: "10px 28px", fontSize: "14px",
+                  fontWeight: "700", cursor: "pointer", fontFamily: "inherit",
+                }}>▶ Join Stream</button>
+              </div>
+              <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontWeight: "700" }}>GlobalHub Official</div>
+                  <div style={{ color: COLORS.muted, fontSize: "12px" }}>Business & Entrepreneurship</div>
+                </div>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, color: COLORS.text, padding: "6px 14px", borderRadius: "16px", cursor: "pointer", fontSize: "12px", fontFamily: "inherit" }}>👍 Like</button>
+                  <button style={{ background: COLORS.accent, border: "none", color: "#000", padding: "6px 14px", borderRadius: "16px", cursor: "pointer", fontSize: "12px", fontWeight: "700", fontFamily: "inherit" }}>🔔 Subscribe</button>
+                </div>
+              </div>
+            </div>
+
+            {/* Live Chat */}
+            <div style={{
+              background: COLORS.card, border: `1px solid ${COLORS.border}`,
+              borderRadius: "12px", padding: "16px",
+            }}>
+              <div style={{ fontWeight: "700", marginBottom: "12px", fontSize: "14px" }}>💬 Live Chat</div>
+              {[
+                { user: "Ahmed K.", msg: "Amazing session! 🔥", color: COLORS.accent },
+                { user: "Priya S.", msg: "This platform is next level!", color: COLORS.purple },
+                { user: "John M.", msg: "Just signed up for GlobalHub Pro", color: COLORS.gold },
+                { user: "Liu W.", msg: "Watching from Shanghai 🇨🇳", color: COLORS.green },
+              ].map((msg, i) => (
+                <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "8px", fontSize: "13px" }}>
+                  <span style={{ color: msg.color, fontWeight: "700", flexShrink: 0 }}>{msg.user}:</span>
+                  <span style={{ color: COLORS.text }}>{msg.msg}</span>
+                </div>
+              ))}
+              <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+                <input placeholder="Say something..." style={{
+                  flex: 1, background: COLORS.surface, border: `1px solid ${COLORS.border}`,
+                  borderRadius: "20px", padding: "8px 14px", color: COLORS.text,
+                  fontSize: "13px", outline: "none", fontFamily: "inherit",
+                }} />
+                <button style={{
+                  background: COLORS.accent, color: "#000", border: "none",
+                  borderRadius: "20px", padding: "8px 16px", fontWeight: "700",
+                  cursor: "pointer", fontSize: "13px", fontFamily: "inherit",
+                }}>Send</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== SOCIAL TAB ===== */}
+        {activeTab === "Social" && (
+          <div className="slide-in" style={{ padding: "20px", maxWidth: "680px", margin: "0 auto" }}>
+            {/* Create Post */}
+            <div style={{
+              background: COLORS.card, border: `1px solid ${COLORS.border}`,
+              borderRadius: "14px", padding: "16px", marginBottom: "16px",
+            }}>
+              <div style={{ display: "flex", gap: "12px" }}>
+                <div style={{
+                  width: "40px", height: "40px", borderRadius: "50%",
+                  background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.purple})`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "14px", fontWeight: "700", color: "#000", flexShrink: 0,
+                }}>U</div>
+                <input placeholder="Share something with the global community..." style={{
+                  flex: 1, background: COLORS.surface, border: `1px solid ${COLORS.border}`,
+                  borderRadius: "20px", padding: "10px 16px", color: COLORS.text,
+                  fontSize: "13px", outline: "none", fontFamily: "inherit",
+                }} />
+              </div>
+              <div style={{ display: "flex", gap: "8px", marginTop: "12px", paddingLeft: "52px" }}>
+                {["📹 Video", "📸 Photo", "🔴 Live", "📊 Poll"].map(action => (
+                  <button key={action} style={{
+                    background: COLORS.surface, border: `1px solid ${COLORS.border}`,
+                    color: COLORS.muted, borderRadius: "16px", padding: "5px 12px",
+                    fontSize: "11px", cursor: "pointer", fontFamily: "inherit",
+                  }}>{action}</button>
+                ))}
+                <button style={{
+                  marginLeft: "auto", background: COLORS.accent, border: "none",
+                  color: "#000", borderRadius: "16px", padding: "5px 16px",
+                  fontSize: "12px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit",
+                }}>Post</button>
+              </div>
+            </div>
+
+            {/* Posts Feed */}
+            {mockPosts.map(post => (
+              <div key={post.id} className="card-hover" style={{
+                background: COLORS.card, border: `1px solid ${COLORS.border}`,
+                borderRadius: "14px", padding: "18px", marginBottom: "12px",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+                  <div style={{
+                    width: "40px", height: "40px", borderRadius: "50%",
+                    background: `linear-gradient(135deg, ${COLORS.purple}, ${COLORS.accent})`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "13px", fontWeight: "700", color: "#fff", flexShrink: 0,
+                  }}>{post.avatar}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: "700", fontSize: "14px" }}>{post.user}</div>
+                    <div style={{ color: COLORS.muted, fontSize: "11px" }}>{post.role} · {post.time}</div>
+                  </div>
+                  <button style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, color: COLORS.accent, borderRadius: "12px", padding: "4px 10px", fontSize: "11px", fontWeight: "600", cursor: "pointer", fontFamily: "inherit" }}>+ Connect</button>
+                </div>
+                <p style={{ fontSize: "14px", lineHeight: "1.6", marginBottom: "14px" }}>{post.content}</p>
+                <div style={{ display: "flex", gap: "4px", borderTop: `1px solid ${COLORS.border}`, paddingTop: "12px" }}>
+                  {[
+                    { icon: likedPosts[post.id] ? "❤️" : "🤍", count: post.likes + (likedPosts[post.id] ? 1 : 0), action: () => toggleLike(post.id) },
+                    { icon: "💬", count: post.comments, action: () => {} },
+                    { icon: "🔁", count: post.shares, action: () => {} },
+                  ].map((btn, i) => (
+                    <button key={i} onClick={btn.action} style={{
+                      flex: 1, background: "transparent", border: "none",
+                      color: COLORS.muted, cursor: "pointer", padding: "6px",
+                      borderRadius: "8px", fontSize: "12px", fontFamily: "inherit",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: "4px",
+                    }}>
+                      <span>{btn.icon}</span>
+                      <span>{btn.count.toLocaleString()}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ===== CRM TAB ===== */}
+        {activeTab === "CRM" && (
+          <div className="slide-in" style={{ padding: "20px", maxWidth: "1000px", margin: "0 auto" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h2 style={{ fontSize: "20px", fontWeight: "700" }}>💼 CRM Dashboard</h2>
+              <button style={{
+                background: COLORS.accent, border: "none", color: "#000",
+                borderRadius: "20px", padding: "8px 18px", fontWeight: "700",
+                cursor: "pointer", fontSize: "12px", fontFamily: "inherit",
+              }}>+ Add Contact</button>
+            </div>
+
+            {/* Pipeline Stats */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px", marginBottom: "20px" }}>
+              {[
+                { label: "Total Pipeline", value: "$282K", color: COLORS.accent },
+                { label: "Hot Leads", value: "12", color: COLORS.red },
+                { label: "Closed Won", value: "$89K", color: COLORS.green },
+                { label: "Conversion", value: "34%", color: COLORS.gold },
+              ].map((stat, i) => (
+                <div key={i} style={{
+                  background: COLORS.card, border: `1px solid ${COLORS.border}`,
+                  borderRadius: "12px", padding: "16px", textAlign: "center",
+                }}>
+                  <div style={{ fontSize: "22px", fontWeight: "800", color: stat.color, fontFamily: "'Space Mono', monospace" }}>{stat.value}</div>
+                  <div style={{ color: COLORS.muted, fontSize: "11px", marginTop: "4px" }}>{stat.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Contacts Table */}
+            <div style={{
+              background: COLORS.card, border: `1px solid ${COLORS.border}`,
+              borderRadius: "14px", overflow: "hidden",
+            }}>
+              <div style={{ padding: "14px 18px", borderBottom: `1px solid ${COLORS.border}`, fontWeight: "700", fontSize: "14px" }}>
+                📋 Active Contacts
+              </div>
+              {mockContacts.map((contact, i) => (
+                <div key={i} className="card-hover" style={{
+                  display: "flex", alignItems: "center", gap: "14px",
+                  padding: "14px 18px",
+                  borderBottom: i < mockContacts.length - 1 ? `1px solid ${COLORS.border}` : "none",
+                }}>
+                  <div style={{
+                    width: "36px", height: "36px", borderRadius: "50%",
+                    background: `linear-gradient(135deg, ${COLORS.purple}, ${COLORS.accent})`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "13px", fontWeight: "700", flexShrink: 0,
+                  }}>{contact.name[0]}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: "600", fontSize: "14px" }}>{contact.name}</div>
+                    <div style={{ color: COLORS.muted, fontSize: "11px" }}>{contact.company}</div>
+                  </div>
+                  <div style={{
+                    background: contact.status === "Closed Won" ? `${COLORS.green}22` : contact.status === "Hot Lead" ? `${COLORS.red}22` : COLORS.surface,
+                    color: contact.status === "Closed Won" ? COLORS.green : contact.status === "Hot Lead" ? COLORS.red : COLORS.muted,
+                    border: `1px solid ${contact.status === "Closed Won" ? COLORS.green : contact.status === "Hot Lead" ? COLORS.red : COLORS.border}44`,
+                    borderRadius: "12px", padding: "3px 10px", fontSize: "11px", fontWeight: "600",
+                  }}>{contact.status}</div>
+                  <div style={{ fontWeight: "700", color: COLORS.accent, fontFamily: "'Space Mono', monospace", fontSize: "13px", minWidth: "70px", textAlign: "right" }}>{contact.value}</div>
+                  <div style={{ color: COLORS.muted, fontSize: "11px", minWidth: "80px", textAlign: "right" }}>{contact.stage}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ===== AI TOOLS TAB ===== */}
+        {activeTab === "AI Tools" && (
+          <div className="slide-in" style={{ padding: "20px", maxWidth: "900px", margin: "0 auto" }}>
+            <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "6px" }}>🤖 AI-Powered Tools</h2>
+            <p style={{ color: COLORS.muted, fontSize: "13px", marginBottom: "20px" }}>Supercharge your business with cutting-edge AI</p>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "14px" }}>
+              {[
+                { icon: "✍️", title: "AI Content Writer", desc: "Generate SEO-optimized content, blogs, social posts in seconds", badge: "Most Used", color: COLORS.accent },
+                { icon: "📊", title: "SEO Analyzer", desc: "Rank #1 on Google with AI-powered keyword research & optimization", badge: "SEO", color: COLORS.green },
+                { icon: "🎬", title: "Video Script AI", desc: "Write viral YouTube scripts optimized for watch time", badge: "Viral", color: COLORS.purple },
+                { icon: "📧", title: "Email Campaigns", desc: "AI-personalized email sequences with 80%+ open rates", badge: "CRM", color: COLORS.gold },
+                { icon: "📈", title: "Business Analytics", desc: "Predict trends and optimize your marketing spend with AI", badge: "Analytics", color: COLORS.red },
+                { icon: "🌐", title: "Auto Translator", desc: "Reach 195 countries — translate content into 100+ languages", badge: "Global", color: COLORS.accent },
+              ].map((tool, i) => (
+                <div key={i} className="card-hover" style={{
+                  background: COLORS.card, border: `1px solid ${COLORS.border}`,
+                  borderRadius: "14px", padding: "20px",
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+                    <span style={{ fontSize: "28px" }}>{tool.icon}</span>
+                    <span style={{
+                      background: `${tool.color}22`, color: tool.color,
+                      border: `1px solid ${tool.color}44`,
+                      borderRadius: "10px", padding: "2px 8px", fontSize: "10px", fontWeight: "700",
+                    }}>{tool.badge}</span>
+                  </div>
+                  <div style={{ fontWeight: "700", fontSize: "15px", marginBottom: "6px" }}>{tool.title}</div>
+                  <div style={{ color: COLORS.muted, fontSize: "12px", lineHeight: "1.5", marginBottom: "14px" }}>{tool.desc}</div>
+                  <button style={{
+                    width: "100%", background: `${tool.color}15`,
+                    border: `1px solid ${tool.color}44`,
+                    color: tool.color, borderRadius: "8px", padding: "8px",
+                    fontSize: "12px", fontWeight: "700", cursor: "pointer", fontFamily: "inherit",
+                  }}>Try Now →</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+
+      {/* BOTTOM NAV (Mobile) */}
+      <div style={{
+        position: "fixed", bottom: 0, left: 0, right: 0,
+        background: `${COLORS.surface}F5`,
+        backdropFilter: "blur(20px)",
+        borderTop: `1px solid ${COLORS.border}`,
+        display: "flex", padding: "8px 0 12px",
+        zIndex: 100,
+      }}>
+        {[
+          { tab: "Home", icon: "🏠" },
+          { tab: "Videos", icon: "🎬" },
+          { tab: "Live", icon: "🔴" },
+          { tab: "Social", icon: "👥" },
+          { tab: "CRM", icon: "💼" },
+          { tab: "AI Tools", icon: "🤖" },
+        ].map(item => (
+          <button key={item.tab} onClick={() => setActiveTab(item.tab)} style={{
+            flex: 1, background: "none", border: "none",
+            color: activeTab === item.tab ? COLORS.accent : COLORS.muted,
+            cursor: "pointer", display: "flex", flexDirection: "column",
+            alignItems: "center", gap: "3px", padding: "4px 0", fontFamily: "inherit",
+          }}>
+            <span style={{ fontSize: "18px" }}>{item.icon}</span>
+            <span style={{ fontSize: "9px", fontWeight: activeTab === item.tab ? "700" : "500" }}>
+              {item.tab}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Bottom padding for nav */}
+      <div style={{ height: "80px" }} />
+    </div>
+  );
+}
+
+function VideoCard({ video }) {
+  return (
+    <div className="card-hover" style={{
+      background: "#0D1626",
+      border: `1px solid #1A2D45`,
+      borderRadius: "12px", overflow: "hidden",
+    }}>
+      <div style={{
+        aspectRatio: "16/9",
+        background: "linear-gradient(135deg, #0A1020, #1A0A2A)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: "40px", position: "relative",
+      }}>
+        {video.thumb}
+        <div style={{
+          position: "absolute", bottom: "8px", right: "8px",
+          background: video.live ? "#FF3B5C" : "#000000CC",
+          color: "#fff", borderRadius: "4px", padding: "2px 6px",
+          fontSize: "10px", fontWeight: "700",
+          display: "flex", alignItems: "center", gap: "4px",
+        }}>
+          {video.live && <span style={{ animation: "pulse 1.5s infinite" }}>●</span>}
+          {video.time}
+        </div>
+      </div>
+      <div style={{ padding: "12px" }}>
+        <div style={{ fontWeight: "600", fontSize: "13px", lineHeight: "1.4", marginBottom: "6px" }}>
+          {video.title}
+        </div>
+        <div style={{ color: "#5A7A9A", fontSize: "11px" }}>
+          {video.channel} · {video.live ? "LIVE" : `${video.views} views`}
+        </div>
+      </div>
+    </div>
+  );
+}
